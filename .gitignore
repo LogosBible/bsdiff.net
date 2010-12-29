@@ -1,0 +1,10 @@
+# ignore output folders
+bin/
+obj/
+
+# ignore user-specific options files
+*.suo
+*.csproj.user
+_ReSharper.*
+*.resharper.user
+*.ReSharper.user
