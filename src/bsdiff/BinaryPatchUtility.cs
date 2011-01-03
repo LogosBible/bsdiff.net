@@ -284,6 +284,11 @@ namespace BsDiff
 					throw new InvalidOperationException("Corrupt patch.");
 			}
 
+			// preallocate buffers for reading and writing
+			const int c_bufferSize = 1048576;
+			byte[] newData = new byte[c_bufferSize];
+			byte[] oldData = new byte[c_bufferSize];
+
 			// prepare to read three parts of the patch in parallel
 			using (Stream compressedControlStream = openPatchStream())
 			using (Stream compressedDiffStream = openPatchStream())
@@ -317,31 +322,50 @@ namespace BsDiff
 						if (newPosition + control[0] > newSize)
 							throw new InvalidOperationException("Corrupt patch.");
 
-						// read diff string
-						byte[] newData = diffStream.ReadExactly((int) control[0]);
-
-						// add old data to diff string
+						// seek old file to the position that the new data is diffed against
 						input.Position = oldPosition;
-						byte[] oldData = input.ReadExactly((int) Math.Min(control[0], input.Length - input.Position));
-						for (int index = 0; index < oldData.Length; index++)
-							newData[index] += oldData[index];
 
-						output.Write(newData, 0, newData.Length);
+						int bytesToCopy = (int) control[0];
+						while (bytesToCopy > 0)
+						{
+							int actualBytesToCopy = Math.Min(bytesToCopy, c_bufferSize);
 
-						// adjust pointers
-						newPosition = (int) (newPosition + control[0]);
-						oldPosition = (int) (oldPosition + control[0]);
+							// read diff string
+							diffStream.ReadExactly(newData, 0, actualBytesToCopy);
+
+							// add old data to diff string
+							int availableInputBytes = Math.Min(actualBytesToCopy, (int) (input.Length - input.Position));
+							input.ReadExactly(oldData, 0, availableInputBytes);
+
+							for (int index = 0; index < availableInputBytes; index++)
+								newData[index] += oldData[index];
+
+							output.Write(newData, 0, actualBytesToCopy);
+
+							// adjust counters
+							newPosition += actualBytesToCopy;
+							oldPosition += actualBytesToCopy;
+							bytesToCopy -= actualBytesToCopy;
+						}
 
 						// sanity-check
 						if (newPosition + control[1] > newSize)
 							throw new InvalidOperationException("Corrupt patch.");
 
 						// read extra string
-						newData = extraStream.ReadExactly((int) control[1]);
-						output.Write(newData, 0, newData.Length);
+						bytesToCopy = (int) control[1];
+						while (bytesToCopy > 0)
+						{
+							int actualBytesToCopy = Math.Min(bytesToCopy, c_bufferSize);
 
-						// adjust pointers
-						newPosition = (int) (newPosition + control[1]);
+							extraStream.ReadExactly(newData, 0, actualBytesToCopy);
+							output.Write(newData, 0, actualBytesToCopy);
+
+							newPosition += actualBytesToCopy;
+							bytesToCopy -= actualBytesToCopy;
+						}
+
+						// adjust position
 						oldPosition = (int) (oldPosition + control[2]);
 					}
 				}
