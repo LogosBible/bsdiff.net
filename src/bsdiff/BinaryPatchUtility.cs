@@ -323,11 +323,8 @@ namespace BsDiff
 						// add old data to diff string
 						input.Position = oldPosition;
 						byte[] oldData = input.ReadExactly((int) Math.Min(control[0], input.Length - input.Position));
-						for (int index = 0; index < control[0]; index++)
-						{
-							if (index < oldData.Length)
-								newData[index] += oldData[index];
-						}
+						for (int index = 0; index < oldData.Length; index++)
+							newData[index] += oldData[index];
 
 						output.Write(newData, 0, newData.Length);
 
