@@ -17,8 +17,8 @@ namespace BsPatch
 			}
 
 			string oldFile = args[0];
-			string patchFile = args[1];
-			string newFile = args[2];
+			string newFile = args[1];
+			string patchFile = args[2];
 
 			try
 			{
