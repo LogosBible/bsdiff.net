@@ -593,9 +593,8 @@ namespace BsDiff
 
 			for (int byteIndex = 0; byteIndex < 8; byteIndex++)
 			{
-				buf[offset + byteIndex] = (byte) (valueToWrite % 256);
-				valueToWrite -= buf[offset + byteIndex];
-				valueToWrite /= 256;
+				buf[offset + byteIndex] = unchecked((byte) valueToWrite);
+				valueToWrite >>= 8;
 			}
 
 			if (value < 0)
