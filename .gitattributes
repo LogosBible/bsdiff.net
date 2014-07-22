@@ -1,0 +1,4 @@
+*           text=auto
+*.cs        text diff=csharp
+*.csproj    text eol=crlf
+*.sln       text eol=crlf
