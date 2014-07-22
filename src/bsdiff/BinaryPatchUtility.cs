@@ -76,8 +76,8 @@ namespace BsDiff
 
 			int[] I = SuffixSort(oldData);
 
-			byte[] db = new byte[newData.Length + 1];
-			byte[] eb = new byte[newData.Length + 1];
+			byte[] db = new byte[newData.Length];
+			byte[] eb = new byte[newData.Length];
 
 			int dblen = 0;
 			int eblen = 0;
