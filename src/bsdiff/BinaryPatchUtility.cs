@@ -1,9 +1,6 @@
-﻿
-using System;
+﻿using System;
 using System.IO;
 using ICSharpCode.SharpZipLib.BZip2;
-using Logos.Utility;
-using Logos.Utility.IO;
 
 namespace BsDiff
 {
@@ -85,8 +82,7 @@ namespace BsDiff
 			int dblen = 0;
 			int eblen = 0;
 
-			using (WrappingStream wrappingStream = new WrappingStream(output, Ownership.None))
-			using (BZip2OutputStream bz2Stream = new BZip2OutputStream(wrappingStream))
+			using (BZip2OutputStream bz2Stream = new BZip2OutputStream(output) { IsStreamOwner = false })
 			{
 				// compute the differences, writing ctrl as we go
 				int scan = 0;
@@ -203,8 +199,7 @@ namespace BsDiff
 			WriteInt64(controlEndPosition - startPosition - c_headerSize, header, 8);
 
 			// write compressed diff data
-			using (WrappingStream wrappingStream = new WrappingStream(output, Ownership.None))
-			using (BZip2OutputStream bz2Stream = new BZip2OutputStream(wrappingStream))
+			using (BZip2OutputStream bz2Stream = new BZip2OutputStream(output) { IsStreamOwner = false})
 			{
 				bz2Stream.Write(db, 0, dblen);
 			}
@@ -214,8 +209,7 @@ namespace BsDiff
 			WriteInt64(diffEndPosition - controlEndPosition, header, 16);
 
 			// write compressed extra data
-			using (WrappingStream wrappingStream = new WrappingStream(output, Ownership.None))
-			using (BZip2OutputStream bz2Stream = new BZip2OutputStream(wrappingStream))
+			using (BZip2OutputStream bz2Stream = new BZip2OutputStream(output) { IsStreamOwner = false })
 			{
 				bz2Stream.Write(eb, 0, eblen);
 			}
@@ -269,7 +263,7 @@ namespace BsDiff
 				if (!patchStream.CanSeek)
 					throw new ArgumentException("Patch stream must be seekable.", "openPatchStream");
 
-				byte[] header = patchStream.ReadExactly(c_headerSize);
+				byte[] header = ReadExactly(patchStream, c_headerSize);
 
 				// check for appropriate magic
 				long signature = ReadInt64(header, 0);
@@ -314,7 +308,7 @@ namespace BsDiff
 						// read control data
 						for (int i = 0; i < 3; i++)
 						{
-							controlStream.ReadExactly(buffer, 0, 8);
+							ReadExactly(controlStream, buffer, 0, 8);
 							control[i] = ReadInt64(buffer, 0);
 						}
 
@@ -331,11 +325,11 @@ namespace BsDiff
 							int actualBytesToCopy = Math.Min(bytesToCopy, c_bufferSize);
 
 							// read diff string
-							diffStream.ReadExactly(newData, 0, actualBytesToCopy);
+							ReadExactly(diffStream, newData, 0, actualBytesToCopy);
 
 							// add old data to diff string
 							int availableInputBytes = Math.Min(actualBytesToCopy, (int) (input.Length - input.Position));
-							input.ReadExactly(oldData, 0, availableInputBytes);
+							ReadExactly(input, oldData, 0, availableInputBytes);
 
 							for (int index = 0; index < availableInputBytes; index++)
 								newData[index] += oldData[index];
@@ -358,7 +352,7 @@ namespace BsDiff
 						{
 							int actualBytesToCopy = Math.Min(bytesToCopy, c_bufferSize);
 
-							extraStream.ReadExactly(newData, 0, actualBytesToCopy);
+							ReadExactly(extraStream, newData, 0, actualBytesToCopy);
 							output.Write(newData, 0, actualBytesToCopy);
 
 							newPosition += actualBytesToCopy;
@@ -606,6 +600,56 @@ namespace BsDiff
 
 			if (value < 0)
 				buf[offset + 7] |= 0x80;
+		}
+
+		/// <summary>
+		/// Reads exactly <paramref name="count"/> bytes from <paramref name="stream"/>.
+		/// </summary>
+		/// <param name="stream">The stream to read from.</param>
+		/// <param name="count">The count of bytes to read.</param>
+		/// <returns>A new byte array containing the data read from the stream.</returns>
+		private static byte[] ReadExactly(Stream stream, int count)
+		{
+			if (count < 0)
+				throw new ArgumentOutOfRangeException("count");
+			byte[] buffer = new byte[count];
+			ReadExactly(stream, buffer, 0, count);
+			return buffer;
+		}
+
+		/// <summary>
+		/// Reads exactly <paramref name="count"/> bytes from <paramref name="stream"/> into
+		/// <paramref name="buffer"/>, starting at the byte given by <paramref name="offset"/>.
+		/// </summary>
+		/// <param name="stream">The stream to read from.</param>
+		/// <param name="buffer">The buffer to read data into.</param>
+		/// <param name="offset">The offset within the buffer at which data is first written.</param>
+		/// <param name="count">The count of bytes to read.</param>
+		private static void ReadExactly(Stream stream, byte[] buffer, int offset, int count)
+		{
+			// check arguments
+			if (stream == null)
+				throw new ArgumentNullException("stream");
+			if (buffer == null)
+				throw new ArgumentNullException("buffer");
+			if (offset < 0 || offset > buffer.Length)
+				throw new ArgumentOutOfRangeException("offset");
+			if (count < 0 || buffer.Length - offset < count)
+				throw new ArgumentOutOfRangeException("count");
+
+			while (count > 0)
+			{
+				// read data
+				int bytesRead = stream.Read(buffer, offset, count);
+
+				// check for failure to read
+				if (bytesRead == 0)
+					throw new EndOfStreamException();
+
+				// move to next block
+				offset += bytesRead;
+				count -= bytesRead;
+			}
 		}
 
 		const long c_fileSignature = 0x3034464649445342L;
