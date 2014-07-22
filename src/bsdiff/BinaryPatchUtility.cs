@@ -37,14 +37,20 @@ namespace BsDiff
 	*/
 	class BinaryPatchUtility
 	{
-		/// <summary>
+        public enum SuffixSortAlgorithm
+        {
+            qsufsort,
+            SAIS
+        }
+        
+        /// <summary>
 		/// Creates a binary patch (in <a href="http://www.daemonology.net/bsdiff/">bsdiff</a> format) that can be used
 		/// (by <see cref="Apply"/>) to transform <paramref name="oldData"/> into <paramref name="newData"/>.
 		/// </summary>
 		/// <param name="oldData">The original binary data.</param>
 		/// <param name="newData">The new binary data.</param>
 		/// <param name="output">A <see cref="Stream"/> to which the patch will be written.</param>
-		public static void Create(byte[] oldData, byte[] newData, Stream output)
+        public static void Create(byte[] oldData, byte[] newData, Stream output, SuffixSortAlgorithm algorithm = SuffixSortAlgorithm.qsufsort)
 		{
 			// check arguments
 			if (oldData == null)
@@ -77,7 +83,19 @@ namespace BsDiff
 			long startPosition = output.Position;
 			output.Write(header, 0, header.Length);
 
-			int[] I = SuffixSort(oldData);
+            int[] I;
+            switch (algorithm)
+            {
+                case SuffixSortAlgorithm.qsufsort:
+                    I = SuffixSort(oldData);
+                    break;
+                case SuffixSortAlgorithm.SAIS:
+                    I = new int[oldData.Length];
+                    SAIS.sufsort(oldData, I, oldData.Length);
+                    break;
+                default:
+                    throw new ArgumentException("Unknown suffix sort algorithm.", "algorithm");
+            }
 
 			byte[] db = new byte[newData.Length];
 			byte[] eb = new byte[newData.Length];

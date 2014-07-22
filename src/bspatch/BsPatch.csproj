@@ -82,6 +82,9 @@
     <Compile Include="..\bsdiff\BinaryPatchUtility.cs">
       <Link>BinaryPatchUtility.cs</Link>
     </Compile>
+    <Compile Include="..\bsdiff\SAIS.cs">
+      <Link>SAIS.cs</Link>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
