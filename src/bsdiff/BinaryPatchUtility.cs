@@ -598,18 +598,19 @@ namespace BsDiff
 
 		private static void WriteInt64(long value, byte[] buf, int offset)
 		{
-			long valueToWrite = value < 0 ? -value : value;
-
-			for (int byteIndex = 0; byteIndex < 8; byteIndex++)
-			{
-				buf[offset + byteIndex] = (byte) (valueToWrite % 256);
-				valueToWrite -= buf[offset + byteIndex];
-				valueToWrite /= 256;
-			}
-
-			if (value < 0)
-				buf[offset + 7] |= 0x80;
-		}
+            if (value < 0)
+            {
+                value = -value;
+                for (int i = -1; ++i < 8; value >>= 8)
+                    buf[offset + i] = (byte)value;
+                buf[offset + 7] |= 0x80;
+            }
+            else
+            {
+                for (int i = -1; ++i < 8; value >>= 8)
+                    buf[offset + i] = (byte)value;
+            }
+        }
 
 		const long c_fileSignature = 0x3034464649445342L;
 		const int c_headerSize = 32;
