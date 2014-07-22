@@ -37,14 +37,20 @@ namespace BsDiff
 	*/
 	class BinaryPatchUtility
 	{
-		/// <summary>
+        public enum SuffixSortAlgorithm
+        {
+            qsufsort,
+            SAIS
+        }
+        
+        /// <summary>
 		/// Creates a binary patch (in <a href="http://www.daemonology.net/bsdiff/">bsdiff</a> format) that can be used
 		/// (by <see cref="Apply"/>) to transform <paramref name="oldData"/> into <paramref name="newData"/>.
 		/// </summary>
 		/// <param name="oldData">The original binary data.</param>
 		/// <param name="newData">The new binary data.</param>
 		/// <param name="output">A <see cref="Stream"/> to which the patch will be written.</param>
-		public static void Create(byte[] oldData, byte[] newData, Stream output)
+        public static void Create(byte[] oldData, byte[] newData, Stream output, SuffixSortAlgorithm algorithm = SuffixSortAlgorithm.qsufsort)
 		{
 			// check arguments
 			if (oldData == null)
@@ -77,10 +83,22 @@ namespace BsDiff
 			long startPosition = output.Position;
 			output.Write(header, 0, header.Length);
 
-			int[] I = SuffixSort(oldData);
+            int[] I;
+            switch (algorithm)
+            {
+                case SuffixSortAlgorithm.qsufsort:
+                    I = SuffixSort(oldData);
+                    break;
+                case SuffixSortAlgorithm.SAIS:
+                    I = new int[oldData.Length];
+                    SAIS.sufsort(oldData, I, oldData.Length);
+                    break;
+                default:
+                    throw new ArgumentException("Unknown suffix sort algorithm.", "algorithm");
+            }
 
-			byte[] db = new byte[newData.Length + 1];
-			byte[] eb = new byte[newData.Length + 1];
+			byte[] db = new byte[newData.Length];
+			byte[] eb = new byte[newData.Length];
 
 			int dblen = 0;
 			int eblen = 0;
@@ -348,7 +366,10 @@ namespace BsDiff
 							bytesToCopy -= actualBytesToCopy;
 						}
 
-						// sanity-check
+                        if (newPosition == newSize)
+                            return;
+
+                        // sanity-check
 						if (newPosition + control[1] > newSize)
 							throw new InvalidOperationException("Corrupt patch.");
 
@@ -595,18 +616,19 @@ namespace BsDiff
 
 		private static void WriteInt64(long value, byte[] buf, int offset)
 		{
-			long valueToWrite = value < 0 ? -value : value;
-
-			for (int byteIndex = 0; byteIndex < 8; byteIndex++)
-			{
-				buf[offset + byteIndex] = (byte) (valueToWrite % 256);
-				valueToWrite -= buf[offset + byteIndex];
-				valueToWrite /= 256;
-			}
-
-			if (value < 0)
-				buf[offset + 7] |= 0x80;
-		}
+            if (value < 0)
+            {
+                value = -value;
+                for (int i = -1; ++i < 8; value >>= 8)
+                    buf[offset + i] = (byte)value;
+                buf[offset + 7] |= 0x80;
+            }
+            else
+            {
+                for (int i = -1; ++i < 8; value >>= 8)
+                    buf[offset + i] = (byte)value;
+            }
+        }
 
 		const long c_fileSignature = 0x3034464649445342L;
 		const int c_headerSize = 32;
