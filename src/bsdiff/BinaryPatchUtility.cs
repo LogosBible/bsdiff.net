@@ -342,7 +342,10 @@ namespace BsDiff
 							bytesToCopy -= actualBytesToCopy;
 						}
 
-						// sanity-check
+                        if (newPosition == newSize)
+                            return;
+
+                        // sanity-check
 						if (newPosition + control[1] > newSize)
 							throw new InvalidOperationException("Corrupt patch.");
 
