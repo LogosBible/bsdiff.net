@@ -1,4 +1,7 @@
-*           text=auto
-*.cs        text diff=csharp
-*.csproj    text eol=crlf
-*.sln       text eol=crlf
+* text=auto eol=lf
+
+*.cs text diff=csharp
+*.csproj text merge=union
+*.sln text merge=union
+
+*.g.cs linguist-generated=true

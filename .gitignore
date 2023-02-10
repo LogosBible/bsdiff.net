@@ -1,10 +1,15 @@
-# ignore output folders
+.vs/
+.idea/
 bin/
 obj/
+release/
 
-# ignore user-specific options files
-*.suo
-*.csproj.user
-_ReSharper.*
-*.resharper.user
-*.ReSharper.user
+*.cache
+*.log
+*.ncrunchproject
+*.ncrunchsolution
+*.user
+launchSettings.json
+nCrunchTemp*
+_ReSharper*
+.DS_Store
