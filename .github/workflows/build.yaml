@@ -21,6 +21,14 @@ jobs:
       - name: Restore
         run: dotnet restore
       - name: Build
-        run: dotnet build --configuration Release --no-restore
+        run: dotnet build --configuration Release --no-restore -p:BuildNumber=${{ github.run_number }}
       - name: Build
         run: dotnet test --configuration Release --no-build
+      - name: Pack
+        run: dotnet pack --configuration Release --no-build
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: NuGet Packages
+          path: '**/*.nupkg'
+          if-no-files-found: error
