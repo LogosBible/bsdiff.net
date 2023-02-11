@@ -3,10 +3,18 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <IsPackable>true</IsPackable>
+    <Description>.NET port of bsdiff, Colin Pervical's binary diff/patch utility, in 100% managed code.</Description>
+    <PackageId>BsDiff</PackageId>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>bsdiff;bspatch;binary;patch</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="SharpZipLib" Version="1.4.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\"/>
   </ItemGroup>
 
 </Project>
