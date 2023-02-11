@@ -6,6 +6,8 @@
     <LangVersion>11.0</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DebugType>Embedded</DebugType>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisMode>AllEnabledByDefault</AnalysisMode>
     <Authors>Logos Bible Software</Authors>
     <Company>Logos Bible Software</Company>
     <Copyright>Copyright 2010-2023 $(Authors)</Copyright>
