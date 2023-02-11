@@ -63,37 +63,37 @@ public static class BinaryPatch
 			32	??	Bzip2ed ctrl block
 			??	??	Bzip2ed diff block
 			??	??	Bzip2ed extra block */
-		byte[] header = new byte[c_headerSize];
+		var header = new byte[c_headerSize];
 		WriteInt64(c_fileSignature, header, 0); // "BSDIFF40"
 		WriteInt64(0, header, 8);
 		WriteInt64(0, header, 16);
 		WriteInt64(newData.Length, header, 24);
 
-		long startPosition = output.Position;
+		var startPosition = output.Position;
 		output.Write(header, 0, header.Length);
 
-		int[] I = SuffixSort(oldData);
+		var I = SuffixSort(oldData);
 
-		byte[] db = new byte[newData.Length];
-		byte[] eb = new byte[newData.Length];
+		var db = new byte[newData.Length];
+		var eb = new byte[newData.Length];
 
-		int dblen = 0;
-		int eblen = 0;
+		var dblen = 0;
+		var eblen = 0;
 
-		using (BZip2OutputStream bz2Stream = new BZip2OutputStream(output) { IsStreamOwner = false })
+		using (var bz2Stream = new BZip2OutputStream(output) { IsStreamOwner = false })
 		{
 			// compute the differences, writing ctrl as we go
-			int scan = 0;
-			int pos = 0;
-			int len = 0;
-			int lastscan = 0;
-			int lastpos = 0;
-			int lastoffset = 0;
+			var scan = 0;
+			var pos = 0;
+			var len = 0;
+			var lastscan = 0;
+			var lastpos = 0;
+			var lastoffset = 0;
 			while (scan < newData.Length)
 			{
-				int oldscore = 0;
+				var oldscore = 0;
 
-				for (int scsc = scan += len; scan < newData.Length; scan++)
+				for (var scsc = scan += len; scan < newData.Length; scan++)
 				{
 					len = Search(I, oldData, newData, scan, 0, oldData.Length, out pos);
 
@@ -112,10 +112,10 @@ public static class BinaryPatch
 
 				if (len != oldscore || scan == newData.Length)
 				{
-					int s = 0;
-					int sf = 0;
-					int lenf = 0;
-					for (int i = 0; (lastscan + i < scan) && (lastpos + i < oldData.Length); )
+					var s = 0;
+					var sf = 0;
+					var lenf = 0;
+					for (var i = 0; (lastscan + i < scan) && (lastpos + i < oldData.Length); )
 					{
 						if (oldData[lastpos + i] == newData[lastscan + i])
 							s++;
@@ -127,12 +127,12 @@ public static class BinaryPatch
 						}
 					}
 
-					int lenb = 0;
+					var lenb = 0;
 					if (scan < newData.Length)
 					{
 						s = 0;
-						int sb = 0;
-						for (int i = 1; (scan >= lastscan + i) && (pos >= i); i++)
+						var sb = 0;
+						for (var i = 1; (scan >= lastscan + i) && (pos >= i); i++)
 						{
 							if (oldData[pos - i] == newData[scan - i])
 								s++;
@@ -146,11 +146,11 @@ public static class BinaryPatch
 
 					if (lastscan + lenf > scan - lenb)
 					{
-						int overlap = (lastscan + lenf) - (scan - lenb);
+						var overlap = (lastscan + lenf) - (scan - lenb);
 						s = 0;
-						int ss = 0;
-						int lens = 0;
-						for (int i = 0; i < overlap; i++)
+						var ss = 0;
+						var lens = 0;
+						for (var i = 0; i < overlap; i++)
 						{
 							if (newData[lastscan + lenf - overlap + i] == oldData[lastpos + lenf - overlap + i])
 								s++;
@@ -167,15 +167,15 @@ public static class BinaryPatch
 						lenb -= lens;
 					}
 
-					for (int i = 0; i < lenf; i++)
+					for (var i = 0; i < lenf; i++)
 						db[dblen + i] = (byte) (newData[lastscan + i] - oldData[lastpos + i]);
-					for (int i = 0; i < (scan - lenb) - (lastscan + lenf); i++)
+					for (var i = 0; i < (scan - lenb) - (lastscan + lenf); i++)
 						eb[eblen + i] = newData[lastscan + lenf + i];
 
 					dblen += lenf;
 					eblen += (scan - lenb) - (lastscan + lenf);
 
-					byte[] buf = new byte[8];
+					var buf = new byte[8];
 					WriteInt64(lenf, buf, 0);
 					bz2Stream.Write(buf, 0, 8);
 
@@ -193,24 +193,20 @@ public static class BinaryPatch
 		}
 
 		// compute size of compressed ctrl data
-		long controlEndPosition = output.Position;
+		var controlEndPosition = output.Position;
 		WriteInt64(controlEndPosition - startPosition - c_headerSize, header, 8);
 
 		// write compressed diff data
-		using (BZip2OutputStream bz2Stream = new BZip2OutputStream(output) { IsStreamOwner = false})
-		{
+		using (var bz2Stream = new BZip2OutputStream(output) { IsStreamOwner = false})
 			bz2Stream.Write(db, 0, dblen);
-		}
 
 		// compute size of compressed diff data
 		long diffEndPosition = output.Position;
 		WriteInt64(diffEndPosition - controlEndPosition, header, 16);
 
 		// write compressed extra data
-		using (BZip2OutputStream bz2Stream = new BZip2OutputStream(output) { IsStreamOwner = false })
-		{
+		using (var bz2Stream = new BZip2OutputStream(output) { IsStreamOwner = false })
 			bz2Stream.Write(eb, 0, eblen);
-		}
 
 		// seek to the beginning, write the header, then seek back to end
 		long endPosition = output.Position;
@@ -253,7 +249,7 @@ public static class BinaryPatch
 		*/
 		// read header
 		long controlLength, diffLength, newSize;
-		using (Stream patchStream = openPatchStream())
+		using (var patchStream = openPatchStream())
 		{
 			// check patch stream capabilities
 			if (!patchStream.CanRead)
@@ -261,10 +257,10 @@ public static class BinaryPatch
 			if (!patchStream.CanSeek)
 				throw new ArgumentException("Patch stream must be seekable.", nameof(openPatchStream));
 
-			byte[] header = ReadExactly(patchStream, c_headerSize);
+			var header = ReadExactly(patchStream, c_headerSize);
 
 			// check for appropriate magic
-			long signature = ReadInt64(header, 0);
+			var signature = ReadInt64(header, 0);
 			if (signature != c_fileSignature)
 				throw new InvalidOperationException("Corrupt patch.");
 
@@ -278,13 +274,13 @@ public static class BinaryPatch
 
 		// preallocate buffers for reading and writing
 		const int c_bufferSize = 1048576;
-		byte[] newData = new byte[c_bufferSize];
-		byte[] oldData = new byte[c_bufferSize];
+		var newData = new byte[c_bufferSize];
+		var oldData = new byte[c_bufferSize];
 
 		// prepare to read three parts of the patch in parallel
-		using Stream compressedControlStream = openPatchStream();
-		using Stream compressedDiffStream = openPatchStream();
-		using Stream compressedExtraStream = openPatchStream();
+		using var compressedControlStream = openPatchStream();
+		using var compressedDiffStream = openPatchStream();
+		using var compressedExtraStream = openPatchStream();
 
 		// seek to the start of each part
 		compressedControlStream.Seek(c_headerSize, SeekOrigin.Current);
@@ -292,18 +288,18 @@ public static class BinaryPatch
 		compressedExtraStream.Seek(c_headerSize + controlLength + diffLength, SeekOrigin.Current);
 
 		// decompress each part (to read it)
-		using BZip2InputStream controlStream = new BZip2InputStream(compressedControlStream);
-		using BZip2InputStream diffStream = new BZip2InputStream(compressedDiffStream);
-		using BZip2InputStream extraStream = new BZip2InputStream(compressedExtraStream);
-		long[] control = new long[3];
-		byte[] buffer = new byte[8];
+		using var controlStream = new BZip2InputStream(compressedControlStream);
+		using var diffStream = new BZip2InputStream(compressedDiffStream);
+		using var extraStream = new BZip2InputStream(compressedExtraStream);
+		var control = new long[3];
+		var buffer = new byte[8];
 
-		int oldPosition = 0;
-		int newPosition = 0;
+		var oldPosition = 0;
+		var newPosition = 0;
 		while (newPosition < newSize)
 		{
 			// read control data
-			for (int i = 0; i < 3; i++)
+			for (var i = 0; i < 3; i++)
 			{
 				ReadExactly(controlStream, buffer, 0, 8);
 				control[i] = ReadInt64(buffer, 0);
@@ -316,19 +312,19 @@ public static class BinaryPatch
 			// seek old file to the position that the new data is diffed against
 			input.Position = oldPosition;
 
-			int bytesToCopy = (int) control[0];
+			var bytesToCopy = (int) control[0];
 			while (bytesToCopy > 0)
 			{
-				int actualBytesToCopy = Math.Min(bytesToCopy, c_bufferSize);
+				var actualBytesToCopy = Math.Min(bytesToCopy, c_bufferSize);
 
 				// read diff string
 				ReadExactly(diffStream, newData, 0, actualBytesToCopy);
 
 				// add old data to diff string
-				int availableInputBytes = Math.Min(actualBytesToCopy, (int) (input.Length - input.Position));
+				var availableInputBytes = Math.Min(actualBytesToCopy, (int) (input.Length - input.Position));
 				ReadExactly(input, oldData, 0, availableInputBytes);
 
-				for (int index = 0; index < availableInputBytes; index++)
+				for (var index = 0; index < availableInputBytes; index++)
 					newData[index] += oldData[index];
 
 				output.Write(newData, 0, actualBytesToCopy);
@@ -347,7 +343,7 @@ public static class BinaryPatch
 			bytesToCopy = (int) control[1];
 			while (bytesToCopy > 0)
 			{
-				int actualBytesToCopy = Math.Min(bytesToCopy, c_bufferSize);
+				var actualBytesToCopy = Math.Min(bytesToCopy, c_bufferSize);
 
 				ReadExactly(extraStream, newData, 0, actualBytesToCopy);
 				output.Write(newData, 0, actualBytesToCopy);
@@ -363,9 +359,9 @@ public static class BinaryPatch
 
 	private static int CompareBytes(byte[] left, int leftOffset, byte[] right, int rightOffset)
 	{
-		for (int index = 0; index < left.Length - leftOffset && index < right.Length - rightOffset; index++)
+		for (var index = 0; index < left.Length - leftOffset && index < right.Length - rightOffset; index++)
 		{
-			int diff = left[index + leftOffset] - right[index + rightOffset];
+			var diff = left[index + leftOffset] - right[index + rightOffset];
 			if (diff != 0)
 				return diff;
 		}
@@ -387,8 +383,8 @@ public static class BinaryPatch
 	{
 		if (end - start < 2)
 		{
-			int startLength = MatchLength(oldData, I[start], newData, newOffset);
-			int endLength = MatchLength(oldData, I[end], newData, newOffset);
+			var startLength = MatchLength(oldData, I[start], newData, newOffset);
+			var endLength = MatchLength(oldData, I[end], newData, newOffset);
 
 			if (startLength > endLength)
 			{
@@ -403,7 +399,7 @@ public static class BinaryPatch
 		}
 		else
 		{
-			int midPoint = start + (end - start) / 2;
+			var midPoint = start + (end - start) / 2;
 			return CompareBytes(oldData, I[midPoint], newData, newOffset) < 0 ?
 				Search(I, oldData, newData, newOffset, midPoint, end, out pos) :
 				Search(I, oldData, newData, newOffset, start, midPoint, out pos);
@@ -415,11 +411,11 @@ public static class BinaryPatch
 		if (len < 16)
 		{
 			int j;
-			for (int k = start; k < start + len; k += j)
+			for (var k = start; k < start + len; k += j)
 			{
 				j = 1;
-				int x = v[I[k] + h];
-				for (int i = 1; k + i < start + len; i++)
+				var x = v[I[k] + h];
+				for (var i = 1; k + i < start + len; i++)
 				{
 					if (v[I[k + i] + h] < x)
 					{
@@ -432,7 +428,7 @@ public static class BinaryPatch
 						j++;
 					}
 				}
-				for (int i = 0; i < j; i++)
+				for (var i = 0; i < j; i++)
 					v[I[k + i]] = k + j - 1;
 				if (j == 1)
 					I[k] = -1;
@@ -440,10 +436,10 @@ public static class BinaryPatch
 		}
 		else
 		{
-			int x = v[I[start + len / 2] + h];
-			int jj = 0;
-			int kk = 0;
-			for (int i2 = start; i2 < start + len; i2++)
+			var x = v[I[start + len / 2] + h];
+			var jj = 0;
+			var kk = 0;
+			for (var i2 = start; i2 < start + len; i2++)
 			{
 				if (v[I[i2] + h] < x)
 					jj++;
@@ -453,9 +449,9 @@ public static class BinaryPatch
 			jj += start;
 			kk += jj;
 
-			int i = start;
-			int j = 0;
-			int k = 0;
+			var i = start;
+			var j = 0;
+			var k = 0;
 			while (i < jj)
 			{
 				if (v[I[i] + h] < x)
@@ -502,35 +498,35 @@ public static class BinaryPatch
 
 	private static int[] SuffixSort(byte[] oldData)
 	{
-		int[] buckets = new int[256];
+		var buckets = new int[256];
 
-		foreach (byte oldByte in oldData)
+		foreach (var oldByte in oldData)
 			buckets[oldByte]++;
-		for (int i = 1; i < 256; i++)
+		for (var i = 1; i < 256; i++)
 			buckets[i] += buckets[i - 1];
-		for (int i = 255; i > 0; i--)
+		for (var i = 255; i > 0; i--)
 			buckets[i] = buckets[i - 1];
 		buckets[0] = 0;
 
-		int[] I = new int[oldData.Length + 1];
+		var I = new int[oldData.Length + 1];
 		for (int i = 0; i < oldData.Length; i++)
 			I[++buckets[oldData[i]]] = i;
 
-		int[] v = new int[oldData.Length + 1];
+		var v = new int[oldData.Length + 1];
 		for (int i = 0; i < oldData.Length; i++)
 			v[i] = buckets[oldData[i]];
 
-		for (int i = 1; i < 256; i++)
+		for (var i = 1; i < 256; i++)
 		{
 			if (buckets[i] == buckets[i - 1] + 1)
 				I[buckets[i]] = -1;
 		}
 		I[0] = -1;
 
-		for (int h = 1; I[0] != -(oldData.Length + 1); h += h)
+		for (var h = 1; I[0] != -(oldData.Length + 1); h += h)
 		{
-			int len = 0;
-			int i = 0;
+			var len = 0;
+			var i = 0;
 			while (i < oldData.Length + 1)
 			{
 				if (I[i] < 0)
@@ -553,7 +549,7 @@ public static class BinaryPatch
 				I[i - len] = -len;
 		}
 
-		for (int i = 0; i < oldData.Length + 1; i++)
+		for (var i = 0; i < oldData.Length + 1; i++)
 			I[v[i]] = i;
 
 		return I;
@@ -561,7 +557,7 @@ public static class BinaryPatch
 
 	private static void Swap(ref int first, ref int second)
 	{
-		int temp = first;
+		var temp = first;
 		first = second;
 		second = temp;
 	}
@@ -570,7 +566,7 @@ public static class BinaryPatch
 	{
 		long value = buf[offset + 7] & 0x7F;
 
-		for (int index = 6; index >= 0; index--)
+		for (var index = 6; index >= 0; index--)
 		{
 			value *= 256;
 			value += buf[offset + index];
@@ -606,7 +602,7 @@ public static class BinaryPatch
 	{
 		if (count < 0)
 			throw new ArgumentOutOfRangeException(nameof(count));
-		byte[] buffer = new byte[count];
+		var buffer = new byte[count];
 		ReadExactly(stream, buffer, 0, count);
 		return buffer;
 	}
@@ -634,7 +630,7 @@ public static class BinaryPatch
 		while (count > 0)
 		{
 			// read data
-			int bytesRead = stream.Read(buffer, offset, count);
+			var bytesRead = stream.Read(buffer, offset, count);
 
 			// check for failure to read
 			if (bytesRead == 0)
