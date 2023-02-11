@@ -123,7 +123,7 @@ public class BinaryPatchTests
 	private static void AssertCreatePatch(byte[] oldData, byte[] newData, int expectedLengthLow, int expectedLengthHigh)
 	{
 		using var outputStream = new MemoryStream();
-		BinaryPatchUtility.Create(oldData, newData, outputStream);
+		BinaryPatch.Create(oldData, newData, outputStream);
 		var patch = outputStream.ToArray();
 		Assert.InRange(patch.Length, expectedLengthLow, expectedLengthHigh);
 		AssertHeader(patch.AsSpan(0, 32), newData.Length);
@@ -139,7 +139,7 @@ public class BinaryPatchTests
 	{
 		using var inputStream = new MemoryStream(oldData);
 		using var outputStream = new MemoryStream();
-		BinaryPatchUtility.Apply(inputStream, () => new MemoryStream(patch), outputStream);
+		BinaryPatch.Apply(inputStream, () => new MemoryStream(patch), outputStream);
 		Assert.Equal(newData, outputStream.ToArray());
 	}
 }

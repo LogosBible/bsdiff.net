@@ -26,7 +26,7 @@ namespace BsDiffTool
 				try
 				{
 					using (var output = new FileStream(patchFile, FileMode.Create))
-						BinaryPatchUtility.Create(File.ReadAllBytes(oldFile), File.ReadAllBytes(newFile), output);
+						BinaryPatch.Create(File.ReadAllBytes(oldFile), File.ReadAllBytes(newFile), output);
 				}
 				catch (FileNotFoundException ex)
 				{
@@ -58,7 +58,7 @@ namespace BsDiffTool
 			// run C# implementation
 			var portTime = Stopwatch.StartNew();
 			using (var output = new FileStream(portPatchFileName, FileMode.Create))
-				BinaryPatchUtility.Create(File.ReadAllBytes(oldFile), File.ReadAllBytes(newFile), output);
+				BinaryPatch.Create(File.ReadAllBytes(oldFile), File.ReadAllBytes(newFile), output);
 			portTime.Stop();
 
 			Console.WriteLine("Patches created in {0} (reference) and {1} (C# port).", referenceTime.Elapsed, portTime.Elapsed);
@@ -81,13 +81,13 @@ namespace BsDiffTool
 			Console.Write("Applying reference patch with port binary...");
 			using (var input = new FileStream(oldFile, FileMode.Open, FileAccess.Read, FileShare.Read))
 			using (var output = new FileStream(outputFilePaths[2], FileMode.Create))
-				BinaryPatchUtility.Apply(input, () => new FileStream(referencePatchFileName, FileMode.Open, FileAccess.Read, FileShare.Read), output);
+				BinaryPatch.Apply(input, () => new FileStream(referencePatchFileName, FileMode.Open, FileAccess.Read, FileShare.Read), output);
 			Console.WriteLine("done.");
 
 			Console.Write("Applying port patch with port binary...");
 			using (var input = new FileStream(oldFile, FileMode.Open, FileAccess.Read, FileShare.Read))
 			using (var output = new FileStream(outputFilePaths[3], FileMode.Create))
-				BinaryPatchUtility.Apply(input, () => new FileStream(portPatchFileName, FileMode.Open, FileAccess.Read, FileShare.Read), output);
+				BinaryPatch.Apply(input, () => new FileStream(portPatchFileName, FileMode.Open, FileAccess.Read, FileShare.Read), output);
 			Console.WriteLine("done.");
 
 			var errors = 0;

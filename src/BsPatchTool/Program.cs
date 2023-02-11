@@ -21,7 +21,7 @@ class Program
 		{
 			using (var input = new FileStream(oldFile, FileMode.Open, FileAccess.Read, FileShare.Read))
 			using (var output = new FileStream(newFile, FileMode.Create))
-				BinaryPatchUtility.Apply(input, () => new FileStream(patchFile, FileMode.Open, FileAccess.Read, FileShare.Read), output);
+				BinaryPatch.Apply(input, () => new FileStream(patchFile, FileMode.Open, FileAccess.Read, FileShare.Read), output);
 		}
 		catch (FileNotFoundException ex)
 		{
