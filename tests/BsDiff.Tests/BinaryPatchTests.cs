@@ -127,6 +127,8 @@ public class BinaryPatchTests
 		var patch = outputStream.ToArray();
 		Assert.InRange(patch.Length, expectedLengthLow, expectedLengthHigh);
 		AssertHeader(patch.AsSpan(0, 32), newData.Length);
+
+		AssertApplyPatch(oldData, newData, patch);
 	}
 
 	private static void AssertHeader(ReadOnlySpan<byte> header, int newFileLength)
