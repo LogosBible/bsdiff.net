@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -8,7 +8,7 @@ namespace BsDiff
 {
 	class Program
 	{
-		static void Main(string[] args)
+		public static void Main(string[] args)
 		{
 			// check for correct usage
 			if (args.Length != 3)

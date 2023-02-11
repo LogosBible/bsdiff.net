@@ -1,0 +1,14 @@
+<Project>
+
+  <PropertyGroup>
+    <Authors>Logos Bible Software</Authors>
+    <Company>Logos Bible Software</Company>
+    <Copyright>Copyright 2010-2023 $(Authors)</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <GitHubOrganization>LogosBible</GitHubOrganization>
+    <RepositoryName>bsdiff.net</RepositoryName>
+    <PackageProjectUrl>https://github.com/$(GitHubOrganization)/$(RepositoryName)</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/$(GitHubOrganization)/$(RepositoryName).git</RepositoryUrl>
+  </PropertyGroup>
+
+</Project>

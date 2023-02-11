@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net472</TargetFramework>
+    <Description>Port of bspatch to .NET.</Description>
+    <AssemblyName>bspatch</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BsDiff\BsDiff.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -32,7 +32,7 @@ namespace BsDiff
 	IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 	POSSIBILITY OF SUCH DAMAGE.
 	*/
-	class BinaryPatchUtility
+	public class BinaryPatchUtility
 	{
 		/// <summary>
 		/// Creates a binary patch (in <a href="http://www.daemonology.net/bsdiff/">bsdiff</a> format) that can be used
