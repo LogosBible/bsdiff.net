@@ -144,4 +144,20 @@ public class BinaryPatchTests
 		BinaryPatch.Apply(inputStream, () => new MemoryStream(patch), outputStream);
 		Assert.Equal(newData, outputStream.ToArray());
 	}
+
+	[Theory]
+	[InlineData(0L, "0000000000000000")]
+	[InlineData(1L, "0100000000000000")]
+	[InlineData(-1L, "0100000000000080")]
+	[InlineData(1000L, "E803000000000000")]
+	[InlineData(-1000L, "E803000000000080")]
+	[InlineData(long.MaxValue, "FFFFFFFFFFFFFF7F")]
+	[InlineData(long.MinValue + 1, "FFFFFFFFFFFFFFFF")]
+	public void ReadWriteInt64(long value, string saved)
+	{
+		Span<byte> buffer = stackalloc byte[8];
+		BinaryPatch.WriteInt64(buffer, value);
+		Assert.Equal(saved, Convert.ToHexString(buffer));
+		Assert.Equal(value, BinaryPatch.ReadInt64(buffer));
+	}
 }

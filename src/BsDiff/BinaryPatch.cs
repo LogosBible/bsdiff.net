@@ -536,7 +536,7 @@ public static class BinaryPatch
 		return I;
 	}
 
-	private static long ReadInt64(ReadOnlySpan<byte> buffer)
+	internal static long ReadInt64(ReadOnlySpan<byte> buffer)
 	{
 		long value = buffer[7] & 0x7F;
 
@@ -552,7 +552,7 @@ public static class BinaryPatch
 		return value;
 	}
 
-	private static void WriteInt64(Span<byte> buffer, long value)
+	internal static void WriteInt64(Span<byte> buffer, long value)
 	{
 		long valueToWrite = value < 0 ? -value : value;
 
