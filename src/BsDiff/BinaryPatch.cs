@@ -33,7 +33,7 @@ POSSIBILITY OF SUCH DAMAGE.
 public static class BinaryPatch
 {
 	/// <summary>
-	/// Creates a binary patch (in <a href="http://www.daemonology.net/bsdiff/">bsdiff</a> format) that can be used
+	/// Creates a binary patch (in <a href="https://www.daemonology.net/bsdiff/">bsdiff</a> format) that can be used
 	/// (by <see cref="Apply"/>) to transform <paramref name="oldData"/> into <paramref name="newData"/>.
 	/// </summary>
 	/// <param name="oldData">The original binary data.</param>
@@ -42,16 +42,16 @@ public static class BinaryPatch
 	public static void Create(byte[] oldData, byte[] newData, Stream output)
 	{
 		// check arguments
-		if (oldData == null)
-			throw new ArgumentNullException("oldData");
-		if (newData == null)
-			throw new ArgumentNullException("newData");
-		if (output == null)
-			throw new ArgumentNullException("output");
+		if (oldData is null)
+			throw new ArgumentNullException(nameof(oldData));
+		if (newData is null)
+			throw new ArgumentNullException(nameof(newData));
+		if (output is null)
+			throw new ArgumentNullException(nameof(output));
 		if (!output.CanSeek)
-			throw new ArgumentException("Output stream must be seekable.", "output");
+			throw new ArgumentException("Output stream must be seekable.", nameof(output));
 		if (!output.CanWrite)
-			throw new ArgumentException("Output stream must be writable.", "output");
+			throw new ArgumentException("Output stream must be writable.", nameof(output));
 
 		/* Header is
 			0	8	 "BSDIFF40"
@@ -231,12 +231,12 @@ public static class BinaryPatch
 	public static void Apply(Stream input, Func<Stream> openPatchStream, Stream output)
 	{
 		// check arguments
-		if (input == null)
-			throw new ArgumentNullException("input");
-		if (openPatchStream == null)
-			throw new ArgumentNullException("openPatchStream");
-		if (output == null)
-			throw new ArgumentNullException("output");
+		if (input is null)
+			throw new ArgumentNullException(nameof(input));
+		if (openPatchStream is null)
+			throw new ArgumentNullException(nameof(openPatchStream));
+		if (output is null)
+			throw new ArgumentNullException(nameof(output));
 
 		/*
 		File format:
@@ -257,9 +257,9 @@ public static class BinaryPatch
 		{
 			// check patch stream capabilities
 			if (!patchStream.CanRead)
-				throw new ArgumentException("Patch stream must be readable.", "openPatchStream");
+				throw new ArgumentException("Patch stream must be readable.", nameof(openPatchStream));
 			if (!patchStream.CanSeek)
-				throw new ArgumentException("Patch stream must be seekable.", "openPatchStream");
+				throw new ArgumentException("Patch stream must be seekable.", nameof(openPatchStream));
 
 			byte[] header = ReadExactly(patchStream, c_headerSize);
 
@@ -605,7 +605,7 @@ public static class BinaryPatch
 	private static byte[] ReadExactly(Stream stream, int count)
 	{
 		if (count < 0)
-			throw new ArgumentOutOfRangeException("count");
+			throw new ArgumentOutOfRangeException(nameof(count));
 		byte[] buffer = new byte[count];
 		ReadExactly(stream, buffer, 0, count);
 		return buffer;
@@ -622,14 +622,14 @@ public static class BinaryPatch
 	private static void ReadExactly(Stream stream, byte[] buffer, int offset, int count)
 	{
 		// check arguments
-		if (stream == null)
-			throw new ArgumentNullException("stream");
-		if (buffer == null)
-			throw new ArgumentNullException("buffer");
+		if (stream is null)
+			throw new ArgumentNullException(nameof(stream));
+		if (buffer is null)
+			throw new ArgumentNullException(nameof(buffer));
 		if (offset < 0 || offset > buffer.Length)
-			throw new ArgumentOutOfRangeException("offset");
+			throw new ArgumentOutOfRangeException(nameof(offset));
 		if (count < 0 || buffer.Length - offset < count)
-			throw new ArgumentOutOfRangeException("count");
+			throw new ArgumentOutOfRangeException(nameof(count));
 
 		while (count > 0)
 		{
