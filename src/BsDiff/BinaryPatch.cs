@@ -1,3 +1,4 @@
+using System.Buffers.Binary;
 using ICSharpCode.SharpZipLib.BZip2;
 
 namespace BsDiff;
@@ -536,34 +537,19 @@ public static class BinaryPatch
 		return I;
 	}
 
+	// Reads a long value stored in sign/magnitude format.
 	internal static long ReadInt64(ReadOnlySpan<byte> buffer)
 	{
-		long value = buffer[7] & 0x7F;
-
-		for (var index = 6; index >= 0; index--)
-		{
-			value *= 256;
-			value += buffer[index];
-		}
-
-		if ((buffer[7] & 0x80) != 0)
-			value = -value;
-
-		return value;
+		var value = BinaryPrimitives.ReadInt64LittleEndian(buffer);
+		var mask = value >> 63;
+		return (~mask & value) | (((value & unchecked((long) 0x8000_0000_0000_0000)) - value) & mask);
 	}
 
+	// Writes a long value in sign/magnitude format.
 	internal static void WriteInt64(Span<byte> buffer, long value)
 	{
-		long valueToWrite = value < 0 ? -value : value;
-
-		for (int byteIndex = 0; byteIndex < 8; byteIndex++)
-		{
-			buffer[byteIndex] = unchecked((byte) valueToWrite);
-			valueToWrite >>= 8;
-		}
-
-		if (value < 0)
-			buffer[7] |= 0x80;
+		var mask = value >> 63;
+		BinaryPrimitives.WriteInt64LittleEndian(buffer, ((value + mask) ^ mask) | (value & unchecked((long) 0x8000_0000_0000_0000)));
 	}
 
 	private const long c_fileSignature = 0x3034464649445342L;
