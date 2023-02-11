@@ -282,85 +282,82 @@ public class BinaryPatch
 		byte[] oldData = new byte[c_bufferSize];
 
 		// prepare to read three parts of the patch in parallel
-		using (Stream compressedControlStream = openPatchStream())
-		using (Stream compressedDiffStream = openPatchStream())
-		using (Stream compressedExtraStream = openPatchStream())
+		using Stream compressedControlStream = openPatchStream();
+		using Stream compressedDiffStream = openPatchStream();
+		using Stream compressedExtraStream = openPatchStream();
+
+		// seek to the start of each part
+		compressedControlStream.Seek(c_headerSize, SeekOrigin.Current);
+		compressedDiffStream.Seek(c_headerSize + controlLength, SeekOrigin.Current);
+		compressedExtraStream.Seek(c_headerSize + controlLength + diffLength, SeekOrigin.Current);
+
+		// decompress each part (to read it)
+		using BZip2InputStream controlStream = new BZip2InputStream(compressedControlStream);
+		using BZip2InputStream diffStream = new BZip2InputStream(compressedDiffStream);
+		using BZip2InputStream extraStream = new BZip2InputStream(compressedExtraStream);
+		long[] control = new long[3];
+		byte[] buffer = new byte[8];
+
+		int oldPosition = 0;
+		int newPosition = 0;
+		while (newPosition < newSize)
 		{
-			// seek to the start of each part
-			compressedControlStream.Seek(c_headerSize, SeekOrigin.Current);
-			compressedDiffStream.Seek(c_headerSize + controlLength, SeekOrigin.Current);
-			compressedExtraStream.Seek(c_headerSize + controlLength + diffLength, SeekOrigin.Current);
-
-			// decompress each part (to read it)
-			using (BZip2InputStream controlStream = new BZip2InputStream(compressedControlStream))
-			using (BZip2InputStream diffStream = new BZip2InputStream(compressedDiffStream))
-			using (BZip2InputStream extraStream = new BZip2InputStream(compressedExtraStream))
+			// read control data
+			for (int i = 0; i < 3; i++)
 			{
-				long[] control = new long[3];
-				byte[] buffer = new byte[8];
-
-				int oldPosition = 0;
-				int newPosition = 0;
-				while (newPosition < newSize)
-				{
-					// read control data
-					for (int i = 0; i < 3; i++)
-					{
-						ReadExactly(controlStream, buffer, 0, 8);
-						control[i] = ReadInt64(buffer, 0);
-					}
-
-					// sanity-check
-					if (newPosition + control[0] > newSize)
-						throw new InvalidOperationException("Corrupt patch.");
-
-					// seek old file to the position that the new data is diffed against
-					input.Position = oldPosition;
-
-					int bytesToCopy = (int) control[0];
-					while (bytesToCopy > 0)
-					{
-						int actualBytesToCopy = Math.Min(bytesToCopy, c_bufferSize);
-
-						// read diff string
-						ReadExactly(diffStream, newData, 0, actualBytesToCopy);
-
-						// add old data to diff string
-						int availableInputBytes = Math.Min(actualBytesToCopy, (int) (input.Length - input.Position));
-						ReadExactly(input, oldData, 0, availableInputBytes);
-
-						for (int index = 0; index < availableInputBytes; index++)
-							newData[index] += oldData[index];
-
-						output.Write(newData, 0, actualBytesToCopy);
-
-						// adjust counters
-						newPosition += actualBytesToCopy;
-						oldPosition += actualBytesToCopy;
-						bytesToCopy -= actualBytesToCopy;
-					}
-
-					// sanity-check
-					if (newPosition + control[1] > newSize)
-						throw new InvalidOperationException("Corrupt patch.");
-
-					// read extra string
-					bytesToCopy = (int) control[1];
-					while (bytesToCopy > 0)
-					{
-						int actualBytesToCopy = Math.Min(bytesToCopy, c_bufferSize);
-
-						ReadExactly(extraStream, newData, 0, actualBytesToCopy);
-						output.Write(newData, 0, actualBytesToCopy);
-
-						newPosition += actualBytesToCopy;
-						bytesToCopy -= actualBytesToCopy;
-					}
-
-					// adjust position
-					oldPosition = (int) (oldPosition + control[2]);
-				}
+				ReadExactly(controlStream, buffer, 0, 8);
+				control[i] = ReadInt64(buffer, 0);
 			}
+
+			// sanity-check
+			if (newPosition + control[0] > newSize)
+				throw new InvalidOperationException("Corrupt patch.");
+
+			// seek old file to the position that the new data is diffed against
+			input.Position = oldPosition;
+
+			int bytesToCopy = (int) control[0];
+			while (bytesToCopy > 0)
+			{
+				int actualBytesToCopy = Math.Min(bytesToCopy, c_bufferSize);
+
+				// read diff string
+				ReadExactly(diffStream, newData, 0, actualBytesToCopy);
+
+				// add old data to diff string
+				int availableInputBytes = Math.Min(actualBytesToCopy, (int) (input.Length - input.Position));
+				ReadExactly(input, oldData, 0, availableInputBytes);
+
+				for (int index = 0; index < availableInputBytes; index++)
+					newData[index] += oldData[index];
+
+				output.Write(newData, 0, actualBytesToCopy);
+
+				// adjust counters
+				newPosition += actualBytesToCopy;
+				oldPosition += actualBytesToCopy;
+				bytesToCopy -= actualBytesToCopy;
+			}
+
+			// sanity-check
+			if (newPosition + control[1] > newSize)
+				throw new InvalidOperationException("Corrupt patch.");
+
+			// read extra string
+			bytesToCopy = (int) control[1];
+			while (bytesToCopy > 0)
+			{
+				int actualBytesToCopy = Math.Min(bytesToCopy, c_bufferSize);
+
+				ReadExactly(extraStream, newData, 0, actualBytesToCopy);
+				output.Write(newData, 0, actualBytesToCopy);
+
+				newPosition += actualBytesToCopy;
+				bytesToCopy -= actualBytesToCopy;
+			}
+
+			// adjust position
+			oldPosition = (int) (oldPosition + control[2]);
 		}
 	}
 
@@ -649,6 +646,6 @@ public class BinaryPatch
 		}
 	}
 
-	const long c_fileSignature = 0x3034464649445342L;
-	const int c_headerSize = 32;
+	private const long c_fileSignature = 0x3034464649445342L;
+	private const int c_headerSize = 32;
 }
