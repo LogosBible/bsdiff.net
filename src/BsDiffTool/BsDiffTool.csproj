@@ -4,7 +4,6 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net472</TargetFramework>
     <Description>Port of bsdiff to .NET.</Description>
-    <AssemblyName>bsdiff</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
