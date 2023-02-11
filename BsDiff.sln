@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.30501.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BsDiff", "BsDiff\BsDiff.csproj", "{81057D08-D450-4757-BD10-53B0DFEA330B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BsDiff", "src\bsdiff\BsDiff.csproj", "{81057D08-D450-4757-BD10-53B0DFEA330B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BsPatch", "bspatch\BsPatch.csproj", "{FBD5B05E-80EC-44FC-AECC-257A48A00096}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BsPatch", "src\bspatch\BsPatch.csproj", "{FBD5B05E-80EC-44FC-AECC-257A48A00096}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
