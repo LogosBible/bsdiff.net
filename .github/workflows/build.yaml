@@ -22,7 +22,7 @@ jobs:
         run: dotnet restore
       - name: Build
         run: dotnet build --configuration Release --no-restore -p:BuildNumber=${{ github.run_number }}
-      - name: Build
+      - name: Test
         run: dotnet test --configuration Release --no-build
       - name: Pack
         run: dotnet pack --configuration Release --no-build
