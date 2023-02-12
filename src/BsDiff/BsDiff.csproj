@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;net7.0</TargetFrameworks>
     <IsPackable>true</IsPackable>
     <Description>.NET port of bsdiff, Colin Pervical's binary diff/patch utility, in 100% managed code.</Description>
     <PackageId>BsDiff</PackageId>
@@ -11,6 +11,10 @@
 
   <ItemGroup>
     <PackageReference Include="SharpZipLib" Version="1.4.2" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <PackageReference Include="IndexRange" Version="1.0.2" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
