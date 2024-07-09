@@ -43,8 +43,12 @@ public static class BinaryPatch
 	public static void Create(ReadOnlySpan<byte> oldData, ReadOnlySpan<byte> newData, Stream output)
 	{
 		// check arguments
+#if NET6_0_OR_GREATER
+		ArgumentNullException.ThrowIfNull(output);
+#else
 		if (output is null)
 			throw new ArgumentNullException(nameof(output));
+#endif
 		if (!output.CanSeek)
 			throw new ArgumentException("Output stream must be seekable.", nameof(output));
 		if (!output.CanWrite)
@@ -222,12 +226,18 @@ public static class BinaryPatch
 	public static void Apply(Stream input, Func<Stream> openPatchStream, Stream output)
 	{
 		// check arguments
+#if NET6_0_OR_GREATER
+		ArgumentNullException.ThrowIfNull(input);
+		ArgumentNullException.ThrowIfNull(openPatchStream);
+		ArgumentNullException.ThrowIfNull(output);
+#else
 		if (input is null)
 			throw new ArgumentNullException(nameof(input));
 		if (openPatchStream is null)
 			throw new ArgumentNullException(nameof(openPatchStream));
 		if (output is null)
 			throw new ArgumentNullException(nameof(output));
+#endif
 
 		/*
 		File format:
