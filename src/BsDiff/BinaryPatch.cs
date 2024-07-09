@@ -40,6 +40,16 @@ public static class BinaryPatch
 	/// <param name="oldData">The original binary data.</param>
 	/// <param name="newData">The new binary data.</param>
 	/// <param name="output">A <see cref="Stream"/> to which the patch will be written.</param>
+	public static void Create(byte[] oldData, byte[] newData, Stream output) =>
+		Create(oldData.AsSpan(), newData.AsSpan(), output);
+
+	/// <summary>
+	/// Creates a binary patch (in <a href="https://www.daemonology.net/bsdiff/">bsdiff</a> format) that can be used
+	/// (by <see cref="Apply"/>) to transform <paramref name="oldData"/> into <paramref name="newData"/>.
+	/// </summary>
+	/// <param name="oldData">The original binary data.</param>
+	/// <param name="newData">The new binary data.</param>
+	/// <param name="output">A <see cref="Stream"/> to which the patch will be written.</param>
 	public static void Create(ReadOnlySpan<byte> oldData, ReadOnlySpan<byte> newData, Stream output)
 	{
 		// check arguments
