@@ -4,7 +4,7 @@ bsdiff and bspatch are tools for building and applying patches to binary files.
 For more information, see https://www.daemonology.net/bsdiff/
 
 [![Build](https://github.com/LogosBible/bsdiff.net/actions/workflows/build.yaml/badge.svg)](https://github.com/LogosBible/bsdiff.net/actions/workflows/build.yaml)
-![Nuget](https://img.shields.io/nuget/v/BsDiff)
+[![Nuget](https://img.shields.io/nuget/v/BsDiff)](https://www.nuget.org/packages/BsDiff)
 
 ## License
 
