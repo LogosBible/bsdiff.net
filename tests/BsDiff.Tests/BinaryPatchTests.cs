@@ -5,6 +5,30 @@ namespace BsDiff.Tests;
 public class BinaryPatchTests
 {
 	[Fact]
+	public void CreateNullOldData() =>
+		Assert.Throws<ArgumentNullException>(() => BinaryPatch.Create(null!, Array.Empty<byte>(), new MemoryStream()));
+
+	[Fact]
+	public void CreateNullNewData() =>
+		Assert.Throws<ArgumentNullException>(() => BinaryPatch.Create(Array.Empty<byte>(), null!, new MemoryStream()));
+
+	[Fact]
+	public void CreateNullOutput() =>
+		Assert.Throws<ArgumentNullException>(() => BinaryPatch.Create(Array.Empty<byte>(), Array.Empty<byte>(), null!));
+
+	[Fact]
+	public void ApplyNullInput() =>
+		Assert.Throws<ArgumentNullException>(() => BinaryPatch.Apply(null!, () => new MemoryStream(), new MemoryStream()));
+
+	[Fact]
+	public void ApplyNullCreatePatchStream() =>
+		Assert.Throws<ArgumentNullException>(() => BinaryPatch.Apply(new MemoryStream(), null!, new MemoryStream()));
+
+	[Fact]
+	public void ApplyNullOutput() =>
+		Assert.Throws<ArgumentNullException>(() => BinaryPatch.Apply(new MemoryStream(), () => new MemoryStream(), null!));
+
+	[Fact]
 	public void CreateZeroesPatch()
 	{
 		var oldData = new byte[512];

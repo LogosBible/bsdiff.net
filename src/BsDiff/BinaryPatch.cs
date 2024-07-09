@@ -40,8 +40,21 @@ public static class BinaryPatch
 	/// <param name="oldData">The original binary data.</param>
 	/// <param name="newData">The new binary data.</param>
 	/// <param name="output">A <see cref="Stream"/> to which the patch will be written.</param>
-	public static void Create(byte[] oldData, byte[] newData, Stream output) =>
+	public static void Create(byte[] oldData, byte[] newData, Stream output)
+	{
+		// check arguments
+#if NET6_0_OR_GREATER
+		ArgumentNullException.ThrowIfNull(oldData);
+		ArgumentNullException.ThrowIfNull(newData);
+#else
+		if (oldData is null)
+			throw new ArgumentNullException(nameof(oldData));
+		if (newData is null)
+			throw new ArgumentNullException(nameof(newData));
+#endif
+
 		Create(oldData.AsSpan(), newData.AsSpan(), output);
+	}
 
 	/// <summary>
 	/// Creates a binary patch (in <a href="https://www.daemonology.net/bsdiff/">bsdiff</a> format) that can be used
