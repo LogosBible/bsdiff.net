@@ -21,6 +21,8 @@
     <IsPackable>false</IsPackable>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)BsDiff.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <ItemGroup>

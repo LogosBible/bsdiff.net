@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="BsDiff.Tests" />
+    <InternalsVisibleTo Include="BsDiff.Tests" Key="0024000004800000940000000602000000240000525341310004000001000100c5c13d681a79e257114a10a41004c6b1e84dd1c8724baaa9762b4dd0cf02952f79e2d38e59822bd05298aa6d1e14af2228b083c0622a14977e0a6b105e21f51386d9769807064218f1cb2df187d146fc8e5c7b6e30d3e03a369f83cd49df80164bcba605d45727a7fa0d96d7cfefdff05bb7ffde5a6146e8d8fce5b1d90a48c5" />
   </ItemGroup>
 
   <ItemGroup>
